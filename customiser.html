@@ -6,7 +6,7 @@
     <style>
       body {
         margin: 0;
-        background: black; /* Black border */
+        background: black; 
         overflow: hidden;
       }
 
@@ -39,7 +39,6 @@
       renderer.setSize(window.innerWidth * 0.95, window.innerHeight * 0.95); // Leave space for border
       document.body.appendChild(renderer.domElement);
 
-      // A basic ambient light to start with
       const light = new THREE.AmbientLight(0xffffff, 1);
       scene.add(light);
 
