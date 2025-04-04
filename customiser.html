@@ -13,11 +13,11 @@
       canvas {
         display: block;
         margin: auto;
-        border: none;
         background-color: skyblue;
-        width: 95vw;
-        height: 95vh;
-      }
+        width: calc(100vw - 8px);
+        height: calc(100vh - 8px);
+        box-sizing: border-box;
+        }
     </style>
   </head>
   <body>
@@ -36,7 +36,7 @@
       camera.position.z = 5;
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth * 0.95, window.innerHeight * 0.95); // Leave space for border
+      renderer.setSize(window.innerWidth * 0.8, window.innerHeight * 0.8); // Leave space for border
       document.body.appendChild(renderer.domElement);
 
       const light = new THREE.AmbientLight(0xffffff, 1);
