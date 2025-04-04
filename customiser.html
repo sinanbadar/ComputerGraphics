@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Customiser Scene</title>
+    <style>
+      body {
+        margin: 0;
+        background: black; /* Black border */
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        margin: auto;
+        border: none;
+        background-color: skyblue;
+        width: 95vw;
+        height: 95vh;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from 'https://unpkg.com/three@0.160.1/build/three.module.js';
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('skyblue');
+
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      camera.position.z = 5;
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth * 0.95, window.innerHeight * 0.95); // Leave space for border
+      document.body.appendChild(renderer.domElement);
+
+      // A basic ambient light to start with
+      const light = new THREE.AmbientLight(0xffffff, 1);
+      scene.add(light);
+
+      function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth * 0.95, window.innerHeight * 0.95);
+      });
+    </script>
+  </body>
+</html>
