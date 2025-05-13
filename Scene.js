@@ -1,18 +1,20 @@
 import * as THREE from 'three';
 
-const renderer - new THREE.WebGLRenderer({antialias: true})
-import * as THREE from 'https://unpkg.com/three@0.160.1/build/three.module.js';
+// Removed duplicate and incorrect renderer declaration
+// import * as THREE from 'https://unpkg.com/three@0.160.1/build/three.module.js';
+import { GLTFLoader } from 'https://unpkg.com/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color('skyblue');
+import { OrbitControls } from './Build/controls/OrbitControls.js';
 
 const camera = new THREE.PerspectiveCamera(
-  75,
+  25,                                    
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
-camera.position.z = 5;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('skyblue');
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -21,8 +23,28 @@ document.getElementById('canvas-container').appendChild(renderer.domElement);
 const light = new THREE.AmbientLight(0xffffff, 1);
 scene.add(light);
 
-// Optional: expose objects if needed in other files
 export { scene, camera, renderer, light };
+
+const loader = new GLTFLoader();
+loader.load(
+  './Models/character.glb', 
+  (gltf) => {
+    const character = gltf.scene;
+    scene.add(character);
+
+    camera.position.set(2, 1.5, 5);         
+    camera.lookAt(0, 0.8, 0);  
+
+    character.position.set(0, 0, 0);
+    character.scale.set(1, 1, 1);
+
+    window.character = character;
+  },
+  undefined,
+  (error) => {
+    console.error('Error loading character.glb:', error);
+  }
+);
 
 function animate() {
   requestAnimationFrame(animate);
@@ -36,16 +58,4 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-
-
-// sliders.forEach((slider) => {
-//   slider.addEventListener('input', () => {
-//     const intensity = slider.value / 100;
-    
-//     // Example: control scene brightness or object scale
-//     // scene.background = new THREE.Color(`rgb(${255 * intensity}, ${200 * intensity}, ${255})`);
-//     // object.scale.set(intensity, intensity, intensity);
-    
-//     console.log('Slider changed:', slider.value); // dev only
-//   });
-// });
+const controls = new OrbitControls(camera, renderer.domElement);
