@@ -27,24 +27,47 @@ export { scene, camera, renderer, light };
 
 const loader = new GLTFLoader();
 loader.load(
-  './Models/character.glb', 
+  './Models/character.glb',
   (gltf) => {
     const character = gltf.scene;
     scene.add(character);
 
-    camera.position.set(2, 1.5, 5);         
-    camera.lookAt(0, 0.8, 0);  
+    camera.position.set(2, 1.5, 5);
+    camera.lookAt(0, 0.8, 0);
 
     character.position.set(0, 0, 0);
     character.scale.set(1, 1, 1);
 
-    window.character = character;
+    // 🔍 Find the skinned mesh
+    const skinnedMesh = character.getObjectByProperty('type', 'SkinnedMesh');
+    if (!skinnedMesh) {
+      console.error('SkinnedMesh not found');
+      return;
+    }
+
+    const skeleton = skinnedMesh.skeleton;
+    const headBone = skeleton.bones.find(bone => bone.name.toLowerCase().includes("head"));
+
+    if (!headBone) {
+      console.error('Head bone not found');
+      return;
+    }
+
+    window.headBone = headBone; // ✅ store for later access
+    
+    document.getElementById('slider-1').addEventListener('input', (e) => {
+      const scale = parseFloat(e.target.value) / 50; // Normalize: 50 = 1.0
+      if (window.headBone) {
+        window.headBone.scale.set(scale, scale, scale); // Uniform scale
+        }
+      });
   },
   undefined,
   (error) => {
     console.error('Error loading character.glb:', error);
   }
 );
+
 
 function animate() {
   requestAnimationFrame(animate);
