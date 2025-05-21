@@ -1,0 +1,27 @@
+{
+  "name": "computergraphics",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Scene.js",
+  "scripts": {
+    "start": "http-server . -o customiser.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinanbadar/ComputerGraphics.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sinanbadar/ComputerGraphics/issues"
+  },
+  "homepage": "https://github.com/sinanbadar/ComputerGraphics#readme",
+  "dependencies": {
+    "three": "^0.176.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
