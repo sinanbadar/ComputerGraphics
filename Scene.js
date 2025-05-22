@@ -51,17 +51,51 @@ loader.load(
       rightLeg: skeleton.bones.find(b => b.name.toLowerCase().includes('rightupleg') || b.name.toLowerCase().includes('rightleg'))
     };
 
-    // Check bones
+    // Warn for any missing bones
     Object.entries(bones).forEach(([key, bone]) => {
       if (!bone) console.warn(`${key} bone not found`);
     });
 
-    // Make bones accessible globally
+    // Store bones globally
     window.bones = bones;
-  },
+
+    const hairFiles = ['hair1.glb', 'hair2.glb'];
+    const hairLoader = new GLTFLoader();
+    window.hairModels = {}; // to store them
+    window.currentHairIndex = 1;
+
+    hairFiles.forEach((fileName, i) => {
+    hairLoader.load(`./Models/${fileName}`, (gltf) => {
+      const hair = gltf.scene;
+
+      // ✅ Custom per-hair positioning
+      if (fileName === 'hair1.glb') {
+        hair.position.set(0, 0.39, -0.06);
+      } else if (fileName === 'hair2.glb') {
+        hair.position.set(0, 0.42, 1); // Custom offset for hair2
+      }
+
+      hair.rotation.set(0, 0, 0);
+      hair.scale.set(1, 1, 1);
+
+      hair.visible = (i === 0); // Show only the first hair initially
+
+      // Attach to head bone
+      if (bones.head) {
+        bones.head.add(hair);
+        console.log(`${fileName} attached to head`);
+      } else {
+        console.warn(`Head bone not found for ${fileName}`);
+      }
+
+      window.hairModels[i + 1] = hair;
+    });
+  });
+    },
   undefined,
-  (err) => console.error('Error loading GLB:', err)
+  (err) => console.error('Error loading character.glb:', err)
 );
+
 
 // Resize handling
 window.addEventListener('resize', () => {
