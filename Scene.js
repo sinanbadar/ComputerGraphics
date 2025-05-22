@@ -3,10 +3,10 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from './Build/controls/OrbitControls.js';
 
 const camera = new THREE.PerspectiveCamera(
-    25,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
+  25,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
 );
 
 const scene = new THREE.Scene();
@@ -22,68 +22,58 @@ export { scene, camera, renderer, light };
 
 const loader = new GLTFLoader();
 loader.load(
-    './Models/character.glb',
-    (gltf) => {
-        const character = gltf.scene;
-        scene.add(character);
+  './Models/character.glb',
+  (gltf) => {
+    const character = gltf.scene;
+    scene.add(character);
 
-        camera.position.set(2, 1.5, 5);
-        camera.lookAt(0, 0.8, 0);
+    character.position.set(0, 0, 0);
+    character.scale.set(1, 1, 1);
 
-        character.position.set(0, 0, 0);
-        character.scale.set(1, 1, 1);
+    camera.position.set(2, 1.5, 5);
+    camera.lookAt(0, 0.8, 0);
 
-        const skinnedMesh = character.getObjectByProperty('type', 'SkinnedMesh');
-        if (!skinnedMesh) {
-            console.error('SkinnedMesh not found');
-            return;
-        }
-
-        const skeleton = skinnedMesh.skeleton;
-        const headBone = skeleton.bones.find(bone => bone.name.toLowerCase().includes('head'));
-
-        if (!headBone) {
-            console.error('Head bone not found');
-            return;
-        }
-
-        window.headBone = headBone;
-
-        const slider = document.getElementById('slider-head');
-        if (slider && window.noUiSlider) {
-            noUiSlider.create(slider, {
-                start: 50,
-                connect: [true, false],
-                range: {
-                    min: 0,
-                    max: 100
-                }
-            });
-
-            slider.noUiSlider.on('update', (values, handle) => {
-                const scale = parseFloat(values[handle]) / 50;
-                if (window.headBone) {
-                    window.headBone.scale.set(scale, scale, scale);
-                }
-            });
-        }
-    },
-    undefined,
-    (error) => {
-        console.error('Error loading character.glb:', error);
+    const skinnedMesh = character.getObjectByProperty('type', 'SkinnedMesh');
+    if (!skinnedMesh) {
+      console.error('SkinnedMesh not found');
+      return;
     }
+
+    const skeleton = skinnedMesh.skeleton;
+    const bones = {
+      head: skeleton.bones.find(b => b.name.toLowerCase().includes('head')),
+      rightArm: skeleton.bones.find(b => b.name.toLowerCase().includes('rightarm')),
+      leftArm: skeleton.bones.find(b => b.name.toLowerCase().includes('leftarm')),
+      torso: skeleton.bones.find(b =>
+        b.name.toLowerCase().includes('spine') || b.name.toLowerCase().includes('torso')
+      ),
+      leftLeg: skeleton.bones.find(b => b.name.toLowerCase().includes('leftupleg') || b.name.toLowerCase().includes('leftleg')),
+      rightLeg: skeleton.bones.find(b => b.name.toLowerCase().includes('rightupleg') || b.name.toLowerCase().includes('rightleg'))
+    };
+
+    // Check bones
+    Object.entries(bones).forEach(([key, bone]) => {
+      if (!bone) console.warn(`${key} bone not found`);
+    });
+
+    // Make bones accessible globally
+    window.bones = bones;
+  },
+  undefined,
+  (err) => console.error('Error loading GLB:', err)
 );
 
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-}
-animate();
-
+// Resize handling
 window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 const controls = new OrbitControls(camera, renderer.domElement);
+
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();

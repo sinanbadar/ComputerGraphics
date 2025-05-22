@@ -23,10 +23,13 @@
       width: 100%; height: 100%;
       z-index: 1;
     }
+    .slider-box .noUi-target {
+      width: 100%;
+    }
     .slider-box {
       position: absolute;
       top: 80px; left: 200px;
-      width: 360px; height: 600px;
+      width: 360px; height: 650px;
       background-color: #ffb78c;
       color: black;
       border-radius: 30px;
@@ -134,6 +137,8 @@
   <div id="slider-body" class="slider-box">
     <h3>Character Name</h3>
     <input type="text" class="name-field" />
+    <h3>Torso</h3>
+    <div id="slider-torso"></div>
     <h3>Right Arm</h3>
     <div id="slider-rightarm"></div>
     <h3>Left Arm</h3>
@@ -223,14 +228,35 @@
     el.noUiSlider.on('update', (vals, h) => onUpdate(parseFloat(vals[h])));
   };
 
-  createSlider('slider-head', v => {
-    const s = v/50;
-    if (window.headBone) window.headBone.scale.set(s,s,s);
-  });
-  createSlider('slider-rightarm', v => {});
-  createSlider('slider-leftarm', v => {});
-  createSlider('slider-legsval', v => {});
-  createSlider('slider-shoes', v => {});
+  const scaleBone = (boneName, value) => {
+    const s = value / 50;
+    if (window.bones?.[boneName]) {
+      window.bones[boneName].scale.set(s, s, s);
+    }
+  };
+
+  const scaleTorsoOnly = (value) => {
+    const s = value / 50;
+    if (!window.bones) return;
+
+    if (window.bones.torso) window.bones.torso.scale.set(s, s, s);
+
+    const inv = 1 / s;
+    if (window.bones.head) window.bones.head.scale.set(inv, inv, inv);
+    if (window.bones.leftArm) window.bones.leftArm.scale.set(inv, inv, inv);
+    if (window.bones.rightArm) window.bones.rightArm.scale.set(inv, inv, inv);
+  };
+
+
+  createSlider('slider-head', v => scaleBone('head', v));
+  createSlider('slider-torso', v => scaleTorsoOnly(v));
+  createSlider('slider-rightarm', v => scaleBone('rightArm', v));
+  createSlider('slider-leftarm', v => scaleBone('leftArm', v));
+  createSlider('slider-legsval', v => {
+    const s = v / 50;
+      if (window.bones?.leftLeg) window.bones.leftLeg.scale.set(s, s, s);
+      if (window.bones?.rightLeg) window.bones.rightLeg.scale.set(s, s, s);
+    });
 </script>
 </body>
 </html>
