@@ -18,6 +18,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 const light = new THREE.AmbientLight(0xffffff, 1);
 scene.add(light);
 
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(3, 5, 2);
+scene.add(directionalLight);
+
 export { scene, camera, renderer, light };
 
 const loader = new GLTFLoader();
@@ -51,36 +55,50 @@ loader.load(
       rightLeg: skeleton.bones.find(b => b.name.toLowerCase().includes('rightupleg') || b.name.toLowerCase().includes('rightleg'))
     };
 
-    // Warn for any missing bones
     Object.entries(bones).forEach(([key, bone]) => {
       if (!bone) console.warn(`${key} bone not found`);
     });
 
-    // Store bones globally
     window.bones = bones;
 
-    const hairFiles = ['hair1.glb', 'hair2.glb'];
+    const hairFiles = ['hair1.glb', 'hair2.glb', 'hair3.glb', 'hair4.glb', 'hair5.glb'];
     const hairLoader = new GLTFLoader();
-    window.hairModels = {}; // to store them
+    window.hairModels = {}; 
     window.currentHairIndex = 1;
-
+0
     hairFiles.forEach((fileName, i) => {
     hairLoader.load(`./Models/${fileName}`, (gltf) => {
       const hair = gltf.scene;
 
-      // ✅ Custom per-hair positioning
+      hair.traverse(obj => {
+        if (obj.isMesh) {
+          obj.material = new THREE.MeshStandardMaterial({
+            color: 0x704214, // starting hair color
+            roughness: 0.5,
+            metalness: 0.1
+          });
+          obj.material.needsUpdate = true;
+        }
+      });
+
       if (fileName === 'hair1.glb') {
         hair.position.set(0, 0.39, -0.06);
       } else if (fileName === 'hair2.glb') {
-        hair.position.set(0, 0.42, 1); // Custom offset for hair2
+        hair.position.set(0, 0.39, -0.07); 
+      } else if (fileName === 'hair3.glb') {
+        hair.position.set(0, 0.39, -0.06); 
+      } else if (fileName === 'hair4.glb') {
+        hair.position.set(0, 0.39, -0.06); 
+      } else if (fileName === 'hair5.glb') {
+        hair.position.set(0, 0.39, -0.06); 
       }
+
 
       hair.rotation.set(0, 0, 0);
       hair.scale.set(1, 1, 1);
 
-      hair.visible = (i === 0); // Show only the first hair initially
+      hair.visible = false;
 
-      // Attach to head bone
       if (bones.head) {
         bones.head.add(hair);
         console.log(`${fileName} attached to head`);
