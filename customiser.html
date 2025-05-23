@@ -249,6 +249,18 @@
     }
   });
 
+  skinPicker.on('color:change', color => {
+      const hex = color.hexString;
+      if (window.skinMeshes?.length) {
+        window.skinMeshes.forEach(mesh => {
+          if (mesh.material) {
+            mesh.material.color.set(hex);
+            mesh.material.needsUpdate = true;
+          }
+        });
+      }
+    });
+
   const createSlider = (id, onUpdate) => {
     const el = document.getElementById(id);
     noUiSlider.create(el, {

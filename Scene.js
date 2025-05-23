@@ -18,9 +18,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 const light = new THREE.AmbientLight(0xffffff, 1);
 scene.add(light);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
 directionalLight.position.set(3, 5, 2);
 scene.add(directionalLight);
+
 
 export { scene, camera, renderer, light };
 
@@ -42,6 +43,21 @@ loader.load(
       console.error('SkinnedMesh not found');
       return;
     }
+
+   window.skinMeshes = [];
+
+   character.traverse(obj => {
+      if (obj.isMesh) {
+        const skinMaterial = new THREE.MeshStandardMaterial({
+          color: 0xf2c9a1, 
+          roughness: 0.6,
+          metalness: 0.1
+        });
+        obj.material = skinMaterial;
+        obj.material.needsUpdate = true;
+        window.skinMeshes.push(obj);
+      }
+    });
 
     const skeleton = skinnedMesh.skeleton;
     const bones = {
