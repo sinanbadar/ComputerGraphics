@@ -35,6 +35,10 @@ loader.load(
     character.position.set(0, 0, 0);
     character.scale.set(1, 1, 1);
 
+    controls.target.set(0, 0.8, 0); 
+    controls.update(); 
+
+
     camera.position.set(2, 1.5, 5);
     camera.lookAt(0, 0.8, 0);
 
@@ -81,7 +85,7 @@ loader.load(
     const hairLoader = new GLTFLoader();
     window.hairModels = {}; 
     window.currentHairIndex = 1;
-0
+
     hairFiles.forEach((fileName, i) => {
     hairLoader.load(`./Models/${fileName}`, (gltf) => {
       const hair = gltf.scene;
@@ -89,7 +93,7 @@ loader.load(
       hair.traverse(obj => {
         if (obj.isMesh) {
           obj.material = new THREE.MeshStandardMaterial({
-            color: 0x704214, // starting hair color
+            color: 0xffffff, // starting hair color
             roughness: 0.5,
             metalness: 0.1
           });

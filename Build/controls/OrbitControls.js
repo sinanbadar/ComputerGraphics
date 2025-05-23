@@ -55,8 +55,8 @@ class OrbitControls extends EventDispatcher {
 
 		// Set to true to enable damping (inertia)
 		// If damping is enabled, you must call controls.update() in your animation loop
-		this.enableDamping = false;
-		this.dampingFactor = 0.05;
+		this.enableDamping = true;
+		this.dampingFactor = 0.2;
 
 		// This option actually enables dollying in and out; left as "zoom" for backwards compatibility.
 		// Set to false to disable zooming
@@ -334,6 +334,11 @@ class OrbitControls extends EventDispatcher {
 
 		// current position in spherical coordinates
 		const spherical = new Spherical();
+
+		// Initialize spherical with current camera offset
+		const initialOffset = new Vector3().subVectors(this.object.position, this.target);
+		spherical.setFromVector3(initialOffset);
+
 		const sphericalDelta = new Spherical();
 
 		let scale = 1;
@@ -509,6 +514,7 @@ class OrbitControls extends EventDispatcher {
 		function handleMouseDownRotate( event ) {
 
 			rotateStart.set( event.clientX, event.clientY );
+			rotateEnd.copy(rotateStart);
 
 		}
 
