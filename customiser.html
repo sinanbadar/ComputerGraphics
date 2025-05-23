@@ -28,8 +28,11 @@
     }
     .slider-box {
       position: absolute;
-      top: 80px; left: 200px;
-      width: 360px; height: 650px;
+      top: 80px;
+      left: 200px;
+      width: 360px;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
       background-color: #ffb78c;
       color: black;
       border-radius: 30px;
@@ -41,6 +44,11 @@
       flex-direction: column;
       gap: 20px;
     }
+
+    .slider-box::-webkit-scrollbar {
+      display: none; 
+    }
+
     .slider-box.active {
       display: flex;
     }
@@ -139,10 +147,10 @@
     <input type="text" class="name-field" />
     <h3>Torso</h3>
     <div id="slider-torso"></div>
-    <h3>Right Arm</h3>
-    <div id="slider-rightarm"></div>
-    <h3>Left Arm</h3>
-    <div id="slider-leftarm"></div>
+    <h3>Arms</h3>
+    <div id="slider-arms"></div>
+    <h3>Hands</h3>
+    <div id="slider-hands"></div>
     <h3>Skin Colour</h3>
     <div id="skin-color-picker"></div>
   </div>
@@ -152,6 +160,8 @@
     <input type="text" class="name-field" />
     <h3>Legs</h3>
     <div id="slider-legsval"></div>
+    <h3>Feet</h3>
+    <div id="slider-feet"></div>
     <h3>Shoes</h3>
     <div id="slider-shoes"></div>
     <h3>Shoe Preset</h3>
@@ -290,16 +300,53 @@
     if (window.bones.rightArm) window.bones.rightArm.scale.set(inv, inv, inv);
   };
 
+  const scaleLegsOnly = (value) => {
+    const s = value / 50;
+    if (!window.bones) return;
+
+    if (window.bones.leftLeg) window.bones.leftLeg.scale.set(s, s, s);
+    if (window.bones.rightLeg) window.bones.rightLeg.scale.set(s, s, s);
+
+    const inv = 1 / s;
+    if (window.bones.leftFoot) window.bones.leftFoot.scale.set(inv, inv, inv);
+    if (window.bones.rightFoot) window.bones.rightFoot.scale.set(inv, inv, inv);
+  };
+
+  const scaleFeet = (value) => {
+    const s = value / 50;
+    if (!window.bones) return;
+    if (window.bones.leftFoot) window.bones.leftFoot.scale.set(s, s, s);
+    if (window.bones.rightFoot) window.bones.rightFoot.scale.set(s, s, s);
+  };
+
+  const scaleArmsOnly = (value) => {
+    const s = value / 50;
+    if (!window.bones) return;
+
+    if (window.bones.leftArm) window.bones.leftArm.scale.set(s, s, s);
+    if (window.bones.rightArm) window.bones.rightArm.scale.set(s, s, s);
+
+    const inv = 1 / s;
+    if (window.bones.leftHand) window.bones.leftHand.scale.set(inv, inv, inv);
+    if (window.bones.rightHand) window.bones.rightHand.scale.set(inv, inv, inv);
+  };
+
+  const scaleHands = (value) => {
+    const s = value / 50;
+    if (!window.bones) return;
+
+    if (window.bones.leftHand) window.bones.leftHand.scale.set(s, s, s);
+    if (window.bones.rightHand) window.bones.rightHand.scale.set(s, s, s);
+  };
+
 
   createSlider('slider-head', v => scaleBone('head', v));
   createSlider('slider-torso', v => scaleTorsoOnly(v));
-  createSlider('slider-rightarm', v => scaleBone('rightArm', v));
-  createSlider('slider-leftarm', v => scaleBone('leftArm', v));
-  createSlider('slider-legsval', v => {
-    const s = v / 50;
-      if (window.bones?.leftLeg) window.bones.leftLeg.scale.set(s, s, s);
-      if (window.bones?.rightLeg) window.bones.rightLeg.scale.set(s, s, s);
-    });
+  createSlider('slider-arms', v => scaleArmsOnly(v));
+  createSlider('slider-hands', v => scaleHands(v));
+  createSlider('slider-legsval', v => (scaleLegsOnly(v)));
+  createSlider('slider-feet', v => scaleFeet(v));
+    
 </script>
 </body>
 </html>

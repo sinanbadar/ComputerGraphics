@@ -72,7 +72,11 @@ loader.load(
         b.name.toLowerCase().includes('spine') || b.name.toLowerCase().includes('torso')
       ),
       leftLeg: skeleton.bones.find(b => b.name.toLowerCase().includes('leftupleg') || b.name.toLowerCase().includes('leftleg')),
-      rightLeg: skeleton.bones.find(b => b.name.toLowerCase().includes('rightupleg') || b.name.toLowerCase().includes('rightleg'))
+      rightLeg: skeleton.bones.find(b => b.name.toLowerCase().includes('rightupleg') || b.name.toLowerCase().includes('rightleg')),
+      leftFoot: skeleton.bones.find(b => b.name.toLowerCase().includes('leftfoot')),
+      rightFoot: skeleton.bones.find(b => b.name.toLowerCase().includes('rightfoot')),
+      leftHand: skeleton.bones.find(b => b.name.toLowerCase().includes('lefthand')),
+      rightHand: skeleton.bones.find(b => b.name.toLowerCase().includes('righthand'))
     };
 
     Object.entries(bones).forEach(([key, bone]) => {
