@@ -44,11 +44,9 @@
       flex-direction: column;
       gap: 20px;
     }
-
     .slider-box::-webkit-scrollbar {
-      display: none; 
+      display: none;
     }
-
     .slider-box.active {
       display: flex;
     }
@@ -96,6 +94,7 @@
       transition: background-color 0.2s, transform 0.2s;
       z-index: 10;
       text-transform: none;
+      user-select: none;
     }
     .circle-button:hover {
       background-color: #c47443;
@@ -112,7 +111,6 @@
     #btn-legs { top: calc(57% + 160px); left: calc(42% + 410px); }
   </style>
   <link href="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
   <script type="importmap">
     {
@@ -124,142 +122,192 @@
   </script>
 </head>
 <body>
-<div id="canvas-container">
-  <div id="webgl-layer"></div>
+  <div id="canvas-container">
+    <div id="webgl-layer"></div>
 
-  <div id="slider-face" class="slider-box active">
-    <h3>Character Name</h3>
-    <input type="text" class="name-field" />
-    <h3>Head</h3>
-    <div id="slider-head"></div>
-    <h3>Hair Presets</h3>
-    <div class="preset-controls" data-target="hair">
-      <button class="prev">&larr;</button>
-      <span class="preset-value">0</span>
-      <button class="next">&rarr;</button>
+    <div id="slider-face" class="slider-box">
+      <h3>Character Name</h3>
+      <input type="text" class="name-field" placeholder="Enter name" />
+      <h3>Head</h3>
+      <div id="slider-head"></div>
+      <h3>Eyes</h3>
+      <div class="preset-controls" data-target="eyes">
+        <button class="prev">&larr;</button>
+        <span class="preset-value">0</span>
+        <button class="next">&rarr;</button>
+      </div>
+      <h3>Hair</h3>
+      <div class="preset-controls" data-target="hair">
+        <button class="prev">&larr;</button>
+        <span class="preset-value">0</span>
+        <button class="next">&rarr;</button>
+      </div>
+      <h3>Hair Colour</h3>
+      <div id="hair-color-picker"></div>
     </div>
-    <h3>Hair Colour</h3>
-    <div id="hair-color-picker"></div>
-  </div>
 
-  <div id="slider-body" class="slider-box">
-    <h3>Character Name</h3>
-    <input type="text" class="name-field" />
-    <h3>Torso</h3>
-    <div id="slider-torso"></div>
-    <h3>Arms</h3>
-    <div id="slider-arms"></div>
-    <h3>Hands</h3>
-    <div id="slider-hands"></div>
-    <h3>Skin Colour</h3>
-    <div id="skin-color-picker"></div>
-  </div>
-
-  <div id="slider-legs" class="slider-box">
-    <h3>Character Name</h3>
-    <input type="text" class="name-field" />
-    <h3>Legs</h3>
-    <div id="slider-legsval"></div>
-    <h3>Feet</h3>
-    <div id="slider-feet"></div>
-    <!-- <h3>Shoes</h3>
-    <div id="slider-shoes"></div>
-    <h3>Shoe Preset</h3>
-    <div class="preset-controls" data-target="shoes">
-      <button class="prev">&larr;</button>
-      <span class="preset-value">1</span>
-      <button class="next">&rarr;</button> -->
+    <div id="slider-body" class="slider-box active">
+      <h3>Character Name</h3>
+      <input type="text" class="name-field" placeholder="Enter name" />
+      <h3>Torso</h3>
+      <div id="slider-torso"></div>
+      <h3>Arms</h3>
+      <div id="slider-arms"></div>
+      <h3>Hands</h3>
+      <div id="slider-hands"></div>
+      <h3>Skin Colour</h3>
+      <div id="skin-color-picker"></div>
     </div>
+
+    <div id="slider-legs" class="slider-box">
+      <h3>Character Name</h3>
+      <input type="text" class="name-field" placeholder="Enter name" />
+      <h3>Legs</h3>
+      <div id="slider-legsval"></div>
+      <h3>Feet</h3>
+      <div id="slider-feet"></div>
+    </div>
+
+    <div id="btn-face" class="circle-button">Face</div>
+    <div id="btn-body" class="circle-button active">Body</div>
+    <div id="btn-legs" class="circle-button">Legs</div>
   </div>
 
-  <div id="btn-face" class="circle-button active">Face</div>
-  <div id="btn-body" class="circle-button">Body</div>
-  <div id="btn-legs" class="circle-button">Legs</div>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.js"></script>
+  <script type="module">
+    import { scene, camera, renderer, controls } from './Scene.js';
+    document.getElementById('webgl-layer').appendChild(renderer.domElement);
 
-<script type="module">
-  import { scene, camera, renderer } from './Scene.js';
-  document.getElementById('webgl-layer').appendChild(renderer.domElement);
+    const buttons = {
+      face: document.getElementById('btn-face'),
+      body: document.getElementById('btn-body'),
+      legs: document.getElementById('btn-legs')
+    };
+    const sliders = {
+      face: document.getElementById('slider-face'),
+      body: document.getElementById('slider-body'),
+      legs: document.getElementById('slider-legs')
+    };
 
-  const buttons = {
-    face: document.getElementById('btn-face'),
-    body: document.getElementById('btn-body'),
-    legs: document.getElementById('btn-legs')
-  };
-  const sliders = {
-    face: document.getElementById('slider-face'),
-    body: document.getElementById('slider-body'),
-    legs: document.getElementById('slider-legs')
-  };
-  function activate(section) {
-    Object.values(sliders).forEach(s => s.classList.remove('active'));
-    Object.values(buttons).forEach(b => b.classList.remove('active'));
-    sliders[section].classList.add('active');
-    buttons[section].classList.add('active');
-  }
-  buttons.face.addEventListener('click', () => activate('face'));
-  buttons.body.addEventListener('click', () => activate('body'));
-  buttons.legs.addEventListener('click', () => activate('legs'));
-
-  const nameFields = document.querySelectorAll('.name-field');
-  nameFields.forEach(input => {
-    input.addEventListener('input', () => {
-      nameFields.forEach(f => { if (f !== input) f.value = input.value; });
-    });
-  });
-
-  document.querySelectorAll('.preset-controls').forEach(group => {
-    const valEl = group.querySelector('.preset-value');
-    let val = parseInt(valEl.textContent);
-    const target = group.dataset.target;
-
-    group.querySelector('.prev').addEventListener('click', () => {
-      val = val - 1 < 0 ? Object.keys(window.hairModels).length : val - 1;
-      valEl.textContent = val;
-      if (target === 'hair') updateHairVisibility(val);
-    });
-
-    group.querySelector('.next').addEventListener('click', () => {
-      val = val + 1 > Object.keys(window.hairModels).length ? 0 : val + 1;
-      valEl.textContent = val;
-      if (target === 'hair') updateHairVisibility(val);
-    });
-  });
-
-
-  const hairPicker = new iro.ColorPicker('#hair-color-picker', {
-    width: 220, color: '#ffffff', borderWidth: 2, borderColor: '#fff'
-  });
-  const skinPicker = new iro.ColorPicker('#skin-color-picker', {
-    width: 220, color: '#ffffff', borderWidth: 2, borderColor: '#fff'
-  });
-
-  const updateHairVisibility = (index) => {
-    Object.entries(window.hairModels).forEach(([key, model]) => {
-      model.visible = parseInt(key) === index;
-    });
-    if (index === 0) {
-      Object.values(window.hairModels).forEach(model => model.visible = false);
+    function activate(section) {
+      Object.values(sliders).forEach(s => s.classList.remove('active'));
+      Object.values(buttons).forEach(b => b.classList.remove('active'));
+      sliders[section].classList.add('active');
+      buttons[section].classList.add('active');
     }
-    window.currentHairIndex = index;
-  };
 
+    function zoomToFace() {
+      camera.position.set(1.2, 1.8, 2.2);
+      controls.target.set(0, 1.4, 0);
+      controls.update();
+    }
+    function zoomToBody() {
+      camera.position.set(2, 1.5, 5);
+      controls.target.set(0, 0.8, 0);
+      controls.update();
+    }
+    function zoomToLegs() {
+      camera.position.set(1.5, 0.7, 2.5);
+      controls.target.set(0, 0.4, 0);
+      controls.update();
+    }
 
-  hairPicker.on('color:change', color => {
-    if (window.currentHairIndex === 0) return; 
-    const hex = color.hexString;
-    const currentHair = window.hairModels?.[window.currentHairIndex];
-    if (currentHair) {
-      currentHair.traverse(obj => {
-        if (obj.isMesh && obj.material) {
-          obj.material.color.set(hex);
-          obj.material.needsUpdate = true;
-        }
+    buttons.face.addEventListener('click', () => {
+      activate('face');
+      zoomToFace();
+    });
+    buttons.body.addEventListener('click', () => {
+      activate('body');
+      zoomToBody();
+    });
+    buttons.legs.addEventListener('click', () => {
+      activate('legs');
+      zoomToLegs();
+    });
+
+    const nameFields = document.querySelectorAll('.name-field');
+    nameFields.forEach(input => {
+      input.addEventListener('input', () => {
+        nameFields.forEach(f => { if (f !== input) f.value = input.value; });
       });
-    }
-  });
+    });
 
-  skinPicker.on('color:change', color => {
+    document.querySelectorAll('.preset-controls').forEach(group => {
+      const valEl = group.querySelector('.preset-value');
+      let val = parseInt(valEl.textContent);
+      const target = group.dataset.target;
+
+      group.querySelector('.prev').addEventListener('click', () => {
+        const modelCount = target === 'hair'
+          ? Object.keys(window.hairModels).length
+          : target === 'eyes'
+            ? Object.keys(window.eyeModels).length
+            : 0;
+
+        val = val - 1 < 0 ? modelCount : val - 1;
+        valEl.textContent = val;
+
+        if (target === 'hair') updateHairVisibility(val);
+        if (target === 'eyes') updateEyeVisibility(val);
+      });
+
+      group.querySelector('.next').addEventListener('click', () => {
+        const modelCount = target === 'hair'
+          ? Object.keys(window.hairModels).length
+          : target === 'eyes'
+            ? Object.keys(window.eyeModels).length
+            : 0;
+
+        val = val + 1 > modelCount ? 0 : val + 1;
+        valEl.textContent = val;
+
+        if (target === 'hair') updateHairVisibility(val);
+        if (target === 'eyes') updateEyeVisibility(val);
+      });
+    });
+
+    const hairPicker = new iro.ColorPicker('#hair-color-picker', {
+      width: 220, color: '#ffffff', borderWidth: 2, borderColor: '#fff'
+    });
+    const skinPicker = new iro.ColorPicker('#skin-color-picker', {
+      width: 220, color: '#ffffff', borderWidth: 2, borderColor: '#fff'
+    });
+
+    const updateHairVisibility = (index) => {
+      Object.entries(window.hairModels).forEach(([key, model]) => {
+        model.visible = (parseInt(key) === index);
+      });
+      if (index === 0) {
+        Object.values(window.hairModels).forEach(model => model.visible = false);
+      }
+      window.currentHairIndex = index;
+    };
+
+    hairPicker.on('color:change', color => {
+      if (window.currentHairIndex === 0) return;
+      const hex = color.hexString;
+      const currentHair = window.hairModels?.[window.currentHairIndex];
+      if (currentHair) {
+        currentHair.traverse(obj => {
+          if (obj.isMesh && obj.material) {
+            obj.material.color.set(hex);
+            obj.material.needsUpdate = true;
+          }
+        });
+      }
+    });
+
+    const updateEyeVisibility = (index) => {
+      Object.entries(window.eyeModels).forEach(([key, model]) => {
+        model.visible = (parseInt(key) === index);
+      });
+      if (index === 0) {
+        Object.values(window.eyeModels).forEach(model => model.visible = false);
+      }
+      window.currentEyeIndex = index;
+    };
+
+    skinPicker.on('color:change', color => {
       const hex = color.hexString;
       if (window.skinMeshes?.length) {
         window.skinMeshes.forEach(mesh => {
@@ -271,82 +319,84 @@
       }
     });
 
-  const createSlider = (id, onUpdate) => {
-    const el = document.getElementById(id);
-    noUiSlider.create(el, {
-      start: 50,
-      connect: [true, false],
-      range: { min: 20, max: 100 }
-    });
-    el.noUiSlider.on('update', (vals, h) => onUpdate(parseFloat(vals[h])));
-  };
+    const createSlider = (id, onUpdate) => {
+      const el = document.getElementById(id);
+      noUiSlider.create(el, {
+        start: 50,
+        connect: [true, false],
+        range: { min: 20, max: 100 }
+      });
+      el.noUiSlider.on('update', (vals, handle) => {
+        onUpdate(parseFloat(vals[handle]));
+      });
+    };
 
-  const scaleBone = (boneName, value) => {
-    const s = value / 50;
-    if (window.bones?.[boneName]) {
-      window.bones[boneName].scale.set(s, s, s);
+    const scaleBone = (boneName, value) => {
+      const s = value / 50;
+      if (window.bones?.[boneName]) {
+        window.bones[boneName].scale.set(s, s, s);
+      }
+    };
+    const scaleTorsoOnly = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.torso) window.bones.torso.scale.set(s, s, s);
+      const inv = 1 / s;
+      if (window.bones.head) window.bones.head.scale.set(inv, inv, inv);
+      if (window.bones.leftArm) window.bones.leftArm.scale.set(inv, inv, inv);
+      if (window.bones.rightArm) window.bones.rightArm.scale.set(inv, inv, inv);
+    };
+    const scaleLegsOnly = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.leftLeg) window.bones.leftLeg.scale.set(s, s, s);
+      if (window.bones.rightLeg) window.bones.rightLeg.scale.set(s, s, s);
+      const inv = 1 / s;
+      if (window.bones.leftFoot) window.bones.leftFoot.scale.set(inv, inv, inv);
+      if (window.bones.rightFoot) window.bones.rightFoot.scale.set(inv, inv, inv);
+    };
+    const scaleFeet = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.leftFoot) window.bones.leftFoot.scale.set(s, s, s);
+      if (window.bones.rightFoot) window.bones.rightFoot.scale.set(s, s, s);
+    };
+    const scaleArmsOnly = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.leftArm) window.bones.leftArm.scale.set(s, s, s);
+      if (window.bones.rightArm) window.bones.rightArm.scale.set(s, s, s);
+      const inv = 1 / s;
+      if (window.bones.leftHand) window.bones.leftHand.scale.set(inv, inv, inv);
+      if (window.bones.rightHand) window.bones.rightHand.scale.set(inv, inv, inv);
+    };
+    const scaleHands = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.leftHand) window.bones.leftHand.scale.set(s, s, s);
+      if (window.bones.rightHand) window.bones.rightHand.scale.set(s, s, s);
+    };
+
+    createSlider('slider-head', v => scaleBone('head', v));
+    createSlider('slider-torso', v => scaleTorsoOnly(v));
+    createSlider('slider-arms', v => scaleArmsOnly(v));
+    createSlider('slider-hands', v => scaleHands(v));
+    createSlider('slider-legsval', v => scaleLegsOnly(v));
+    createSlider('slider-feet', v => scaleFeet(v));
+
+    zoomToBody();
+
+    function animateMain() {
+      requestAnimationFrame(animateMain);
+      renderer.render(scene, camera);
     }
-  };
+    animateMain();
 
-  const scaleTorsoOnly = (value) => {
-    const s = value / 50;
-    if (!window.bones) return;
-
-    if (window.bones.torso) window.bones.torso.scale.set(s, s, s);
-
-    const inv = 1 / s;
-    if (window.bones.head) window.bones.head.scale.set(inv, inv, inv);
-    if (window.bones.leftArm) window.bones.leftArm.scale.set(inv, inv, inv);
-    if (window.bones.rightArm) window.bones.rightArm.scale.set(inv, inv, inv);
-  };
-
-  const scaleLegsOnly = (value) => {
-    const s = value / 50;
-    if (!window.bones) return;
-
-    if (window.bones.leftLeg) window.bones.leftLeg.scale.set(s, s, s);
-    if (window.bones.rightLeg) window.bones.rightLeg.scale.set(s, s, s);
-
-    const inv = 1 / s;
-    if (window.bones.leftFoot) window.bones.leftFoot.scale.set(inv, inv, inv);
-    if (window.bones.rightFoot) window.bones.rightFoot.scale.set(inv, inv, inv);
-  };
-
-  const scaleFeet = (value) => {
-    const s = value / 50;
-    if (!window.bones) return;
-    if (window.bones.leftFoot) window.bones.leftFoot.scale.set(s, s, s);
-    if (window.bones.rightFoot) window.bones.rightFoot.scale.set(s, s, s);
-  };
-
-  const scaleArmsOnly = (value) => {
-    const s = value / 50;
-    if (!window.bones) return;
-
-    if (window.bones.leftArm) window.bones.leftArm.scale.set(s, s, s);
-    if (window.bones.rightArm) window.bones.rightArm.scale.set(s, s, s);
-
-    const inv = 1 / s;
-    if (window.bones.leftHand) window.bones.leftHand.scale.set(inv, inv, inv);
-    if (window.bones.rightHand) window.bones.rightHand.scale.set(inv, inv, inv);
-  };
-
-  const scaleHands = (value) => {
-    const s = value / 50;
-    if (!window.bones) return;
-
-    if (window.bones.leftHand) window.bones.leftHand.scale.set(s, s, s);
-    if (window.bones.rightHand) window.bones.rightHand.scale.set(s, s, s);
-  };
-
-
-  createSlider('slider-head', v => scaleBone('head', v));
-  createSlider('slider-torso', v => scaleTorsoOnly(v));
-  createSlider('slider-arms', v => scaleArmsOnly(v));
-  createSlider('slider-hands', v => scaleHands(v));
-  createSlider('slider-legsval', v => (scaleLegsOnly(v)));
-  createSlider('slider-feet', v => scaleFeet(v));
-    
-</script>
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
