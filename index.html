@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Customiser Scene</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #fdf5e6;
+      height: 100%;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    #canvas-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    #webgl-layer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+    }
+
+    .slider-box .noUi-target {
+      width: 100%;
+    }
+    .slider-box {
+      position: absolute;
+      top: 80px;
+      left: 200px;
+      width: 360px;
+      height: 800px;
+      background-color: #ffb78c;
+      color: black;
+      border-radius: 30px;
+      font-size: 20px;
+      z-index: 10;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      padding: 20px;
+      display: none;
+      flex-direction: column;
+      justify-content: space-evenly;
+      gap: 10px;
+      overflow: hidden; 
+    }
+
+    .slider-component {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-grow: 1;
+    }
+
+
+    .slider-box.active {
+      display: flex;
+    }
+
+    .slider-box > * {
+      flex-shrink: 1;
+      min-height: 0; 
+    }
+
+    .slider-box::-webkit-scrollbar {
+      display: none; 
+    }
+
+    .slider-box h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .slider-box input[type="text"] {
+      width: 100%;
+      font-size: 18px;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 20px;
+      background-color: white;
+    }
+   
+    .preset-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    .preset-controls button {
+      background: none;
+      border: none;
+      font-size: 32px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .circle-button {
+      position: absolute;
+      width: 180px; height: 180px;
+      font-size: 26px;
+      background-color: #d88c5b;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: black;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      transition: background-color 0.2s, transform 0.2s;
+      z-index: 10;
+      text-transform: none;
+      user-select: none;
+    }
+    .circle-button:hover {
+      background-color: #c47443;
+    }
+    .circle-button.active {
+      background-color: #b36d3a;
+      transform: scale(1.05);
+    }
+    .noUi-target {
+      height: 12px; 
+      border-radius: 6px;
+    }
+    .noUi-handle {
+      width: 22px;
+      height: 22px;
+      top: -6px; 
+      border-radius: 4px;
+      box-shadow: none;
+      background: white;
+      border: 2px solid #ccc;
+    }
+    .noUi-connect {
+      background: #36b4a5; 
+      border-radius: 6px;
+    }
+
+    #intro-screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(255, 247, 229, 0.95);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #intro-box {
+      width: 400px;
+      padding: 40px;
+      background-color: #ffb78c;
+      border-radius: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      font-size: 20px;
+      color: black;
+    }
+
+    #intro-box input {
+      width: 100%;
+      padding: 10px 16px;
+      font-size: 18px;
+      border: none;
+      border-radius: 20px;
+      background-color: white;
+    }
+
+    #start-button {
+      padding: 10px 20px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 20px;
+      background-color: #d88c5b;
+      cursor: pointer;
+      color: black;
+      transition: background-color 0.2s;
+    }
+    #start-button:hover {
+      background-color: #c47443;
+    }
+
+    #randomize-button {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #d88c5b;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      z-index: 15;
+      user-select: none;
+    }
+    #randomize-button:hover {
+      background-color: #c47443;
+    }
+
+    #name-display {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      font-weight: bold;
+      background-color: rgba(255, 247, 229, 0.85);
+      padding: 10px 20px;
+      border-radius: 20px;
+      color: black;
+      z-index: 20;
+      display: none;
+    }
+
+    #nav-buttons {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      display: flex;
+      gap: 20px;
+    }
+
+    #nav-buttons button {
+      background-color: #d88c5b;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    #nav-buttons button:hover {
+      background-color: #c47443;
+    }
+
+    .stage-button {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #d88c5b;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      z-index: 15;
+      display: none;
+    }
+    .stage-button:hover {
+      background-color: #c47443;
+    }
+
+
+    #btn-face { top: calc(20% - 180px); left: calc(42% + 410px); }
+    #btn-body { top: 36%; left: calc(48% + 440px); }
+    #btn-legs { top: calc(57% + 160px); left: calc(42% + 410px); }
+
+
+  </style>
+  <link href="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+      }
+    }
+  </script>
+  
+</head>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<body>
+  <div id="canvas-container">
+    <div id="nav-buttons">
+      <button id="prev-button"><i class="fas fa-arrow-left"></i></button>
+      <button id="next-button"><i class="fas fa-arrow-right"></i></button>
+    </div>
+    <div id="intro-screen">
+      <div id="intro-box">
+        <h2>Enter Name</h2>
+        <input type="text" id="character-name" placeholder="Your name..." />
+        <button id="start-button">OK</button>
+      </div>
+    </div>
+    <div id="name-display"></div>
+    <div id="webgl-layer"></div>
+    <div id="menu-wrapper">
+      <div id="menu-box">
+        <div id="slider-face" class="slider-box">
+          <div class = "slider-component">
+            <h3>Head</h3>
+            <div id="slider-head"></div>
+          </div>
+          <div class = "slider-component">
+            <h3>Eyes</h3>
+            <div class="preset-controls" data-target="eyes">
+              <button class="prev">&larr;</button>
+              <span class="preset-value">0</span>
+              <button class="next">&rarr;</button>
+            </div>
+           </div>
+          <div class = "slider-component">
+            <h3>Nose</h3>
+            <div class="preset-controls" data-target="nose">
+              <button class="prev">&larr;</button>
+              <span class="preset-value">0</span>
+              <button class="next">&rarr;</button>
+            </div>
+          </div>
+          <div class = "slider-component">
+            <h3>Mouth</h3>
+            <div class="preset-controls" data-target="mouth">
+              <button class="prev">&larr;</button>
+              <span class="preset-value">0</span>
+              <button class="next">&rarr;</button>
+            </div>
+          </div>
+          <div class = "slider-component">
+            <h3>Hair</h3>
+            <div class="preset-controls" data-target="hair">
+              <button class="prev">&larr;</button>
+              <span class="preset-value">0</span>
+              <button class="next">&rarr;</button>
+            </div>
+          </div>
+          <div class = "slider-component">
+            <h3>Hair Colour</h3>
+            <div id="hair-color-picker"></div>
+          </div>
+          </div>
+
+        <div id="slider-body" class="slider-box">
+          <div class = "slider-component">
+            <h3>Torso</h3>
+            <div id="slider-torso"></div>
+          </div>
+          <div class = "slider-component">
+            <h3>Arms</h3>
+            <div id="slider-arms"></div>
+          </div>
+          <div class = "slider-component">
+            <h3>Hands</h3>
+            <div id="slider-hands"></div>
+          </div>
+          <h3>Skin Colour</h3>
+          <div id="skin-color-picker"></div>
+        </div>
+
+        <div id="slider-legs" class="slider-box">
+           <div class = "slider-component">
+            <h3>Legs</h3>
+            <div id="slider-legsval"></div>
+           </div>
+           <div class = "slider-component">
+            <h3>Feet</h3>
+             <div id="slider-feet"></div>
+           </div>
+        </div>
+
+        <div id="btn-face" class="circle-button">Face</div>
+        <div id="btn-body" class="circle-button">Body</div>
+        <div id="btn-legs" class="circle-button">Legs</div>
+        <div id="randomize-button"><i class="fas fa-dice"></i></div>
+      </div>
+    </div>
+    <button id="select-stage-button" class="stage-button">
+      Select Stage
+    </button>
+
+    <div id ="stage"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.0/dist/nouislider.min.js"></script>
+  <script type="module">
+    import { scene, camera, renderer, controls } from './Scene.js';
+    import { initStageShader, cycleShader, stagePlane } from './Scene.js';
+    document.getElementById('webgl-layer').appendChild(renderer.domElement);
+
+    const buttons = {
+      face: document.getElementById('btn-face'),
+      body: document.getElementById('btn-body'),
+      legs: document.getElementById('btn-legs')
+    };
+    const sliders = {
+      face: document.getElementById('slider-face'),
+      body: document.getElementById('slider-body'),
+      legs: document.getElementById('slider-legs')
+    };
+
+    function activate(section) {
+      Object.values(sliders).forEach(s => s.classList.remove('active'));
+      Object.values(buttons).forEach(b => b.classList.remove('active'));
+      sliders[section].classList.add('active');
+      buttons[section].classList.add('active');
+    }
+
+   function zoomToFace() {
+      gsap.to(camera.position, {
+        duration: 1.2,
+        x: 1.2,
+        y: 1.8,
+        z: 2.2,
+        ease: "power2.inOut",
+        onUpdate: () => controls.update()
+      });
+
+      gsap.to(controls.target, {
+        duration: 1.2,
+        x: 0,
+        y: 1.4,
+        z: 0,
+        ease: "power2.inOut",
+        onUpdate: () => controls.update()
+      });
+    }
+
+    function zoomToBody() {
+      gsap.to(camera.position, {
+        duration: 1.2,
+        x: 2,
+        y: 1.5,
+        z: 5,
+        ease: "power2.inOut",
+        onUpdate: () => controls.update()
+      });
+
+      gsap.to(controls.target, {
+        duration: 1.2,
+        x: 0,
+        y: 0.8,
+        z: 0,
+        ease: "power2.inOut",
+        onUpdate: () => controls.update()
+      });
+    }
+
+    function zoomToLegs() {
+      gsap.to(camera.position, {
+        duration: 1.2,
+        x: 1.5,
+        y: 0.7,
+        z: 2.5,
+        ease: "power2.inOut",
+        onUpdate: () => controls.update()
+      });
+
+      gsap.to(controls.target, {
+        duration: 1.2,
+        x: 0,
+        y: 0.4,
+        z: 0,
+        ease: "power2.inOut",
+        onUpdate: () => controls.update()
+      });
+    }
+
+
+    buttons.face.addEventListener('click', () => {
+      activate('face');
+      zoomToFace();
+    });
+    buttons.body.addEventListener('click', () => {
+      activate('body');
+      zoomToBody();
+    });
+    buttons.legs.addEventListener('click', () => {
+      activate('legs');
+      zoomToLegs();
+    });
+
+    const nameFields = document.querySelectorAll('.name-field');
+    nameFields.forEach(input => {
+      input.addEventListener('input', () => {
+        nameFields.forEach(f => { if (f !== input) f.value = input.value; });
+      });
+    });
+
+    document.querySelectorAll('.preset-controls').forEach(group => {
+      const valEl = group.querySelector('.preset-value');
+      let val = parseInt(valEl.textContent);
+      const target = group.dataset.target;
+
+      group.querySelector('.prev').addEventListener('click', () => {
+        const modelCount = target === 'hair'
+          ? Object.keys(window.hairModels).length
+          : target === 'eyes'
+            ? Object.keys(window.eyeModels).length
+            : target === 'nose'
+              ? Object.keys(window.noseModels).length
+              :	target === 'mouth'
+                ? Object.keys(window.mouthModels).length
+                  :	0;
+
+        val = val - 1 < 0 ? modelCount : val - 1;
+        valEl.textContent = val;
+
+        if (target === 'hair') updateHairVisibility(val);
+        if (target === 'eyes') updateEyeVisibility(val);
+        if (target === 'nose') updateNoseVisibility(val);
+        if (target === 'mouth') updateMouthVisibility(val);
+        
+      });
+
+      group.querySelector('.next').addEventListener('click', () => {
+        const modelCount = target === 'hair'
+          ? Object.keys(window.hairModels).length
+          : target === 'eyes'
+            ? Object.keys(window.eyeModels).length
+            : target === 'nose'
+            ? Object.keys(window.noseModels).length
+              : target === 'mouth'
+                ? Object.keys(window.mouthModels).length
+                  : 0;
+
+        val = val + 1 > modelCount ? 0 : val + 1;
+        valEl.textContent = val;
+
+        if (target === 'hair') updateHairVisibility(val);
+        if (target === 'eyes') updateEyeVisibility(val);
+        if (target === 'nose') updateNoseVisibility(val);
+        if (target === 'mouth') updateMouthVisibility(val);
+      });
+    });
+
+    const hairPicker = new iro.ColorPicker('#hair-color-picker', {
+      width: 220, color: '#ffffff', borderWidth: 2, borderColor: '#fff'
+    });
+    const skinPicker = new iro.ColorPicker('#skin-color-picker', {
+      width: 220, color: '#ffffff', borderWidth: 2, borderColor: '#fff'
+    });
+
+    const updateHairVisibility = (index) => {
+      Object.entries(window.hairModels).forEach(([key, model]) => {
+        model.visible = (parseInt(key) === index);
+      });
+      if (index === 0) {
+        Object.values(window.hairModels).forEach(model => model.visible = false);
+      }
+      window.currentHairIndex = index;
+    };
+
+    hairPicker.on('color:change', color => {
+      if (window.currentHairIndex === 0) return;
+      const hex = color.hexString;
+      const currentHair = window.hairModels?.[window.currentHairIndex];
+      if (currentHair) {
+        currentHair.traverse(obj => {
+          if (obj.isMesh && obj.material) {
+            obj.material.color.set(hex);
+            obj.material.needsUpdate = true;
+          }
+        });
+      }
+    });
+
+    const updateEyeVisibility = (index) => {
+      Object.entries(window.eyeModels).forEach(([key, model]) => {
+        model.visible = (parseInt(key) === index);
+      });
+      if (index === 0) {
+        Object.values(window.eyeModels).forEach(model => model.visible = false);
+      }
+      window.currentEyeIndex = index;
+    };
+
+    const updateNoseVisibility = (index) => {
+      Object.entries(window.noseModels).forEach(([key, model]) => {
+        model.visible = (parseInt(key) === index);
+      });
+      if (index === 0) {
+        Object.values(window.noseModels).forEach(model => model.visible = false);
+      }
+      window.currentNoseIndex = index;
+    };
+
+    const updateMouthVisibility = (index) => {
+      Object.entries(window.mouthModels).forEach(([key, model]) => {
+        model.visible = (parseInt(key) === index);
+      });
+      if (index === 0) {
+        Object.values(window.mouthModels).forEach(model => model.visible = false);
+      }
+      window.currentMouthIndex = index;
+    };
+
+    skinPicker.on('color:change', color => {
+      const hex = color.hexString;
+      if (window.skinMeshes?.length) {
+        window.skinMeshes.forEach(mesh => {
+          if (mesh.material) {
+            mesh.material.color.set(hex);
+            mesh.material.needsUpdate = true;
+          }
+        });
+      }
+
+      if (window.noseModels?.[window.currentNoseIndex]) {
+        window.noseModels[window.currentNoseIndex].traverse(obj => {
+          if (obj.isMesh && obj.material) {
+            obj.material.color.set(hex);
+            obj.material.needsUpdate = true;
+          }
+        });
+      }
+
+      if (window.mouthModels?.[window.currentMouthIndex]) {
+        window.mouthModels[window.currentMouthIndex].traverse(obj => {
+          if (obj.isMesh && obj.material) {
+            obj.material.color.set(hex);
+            obj.material.needsUpdate = true;
+          }
+        });
+      }
+    });
+
+    const createSlider = (id, onUpdate) => {
+      const el = document.getElementById(id);
+      noUiSlider.create(el, {
+        start: 50,
+        connect: [true, false],
+        range: { min: 20, max: 100 }
+      });
+      el.noUiSlider.on('update', (vals, handle) => {
+        onUpdate(parseFloat(vals[handle]));
+      });
+    };
+
+    const scaleBone = (boneName, value) => {
+      const s = value / 50;
+      if (window.bones?.[boneName]) {
+        window.bones[boneName].scale.set(s, s, s);
+      }
+    };
+    const scaleTorsoOnly = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.torso) window.bones.torso.scale.set(s, s, s);
+      const inv = 1 / s;
+      if (window.bones.head) window.bones.head.scale.set(inv, inv, inv);
+      if (window.bones.leftArm) window.bones.leftArm.scale.set(inv, inv, inv);
+      if (window.bones.rightArm) window.bones.rightArm.scale.set(inv, inv, inv);
+    };
+    const scaleLegsOnly = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.leftLeg) window.bones.leftLeg.scale.set(s, s, s);
+      if (window.bones.rightLeg) window.bones.rightLeg.scale.set(s, s, s);
+      const inv = 1 / s;
+      if (window.bones.leftFoot) window.bones.leftFoot.scale.set(inv, inv, inv);
+      if (window.bones.rightFoot) window.bones.rightFoot.scale.set(inv, inv, inv);
+    };
+    const scaleFeet = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.leftFoot) window.bones.leftFoot.scale.set(s, s, s);
+      if (window.bones.rightFoot) window.bones.rightFoot.scale.set(s, s, s);
+    };
+    const scaleArmsOnly = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.leftArm) window.bones.leftArm.scale.set(s, s, s);
+      if (window.bones.rightArm) window.bones.rightArm.scale.set(s, s, s);
+      const inv = 1 / s;
+      if (window.bones.leftHand) window.bones.leftHand.scale.set(inv, inv, inv);
+      if (window.bones.rightHand) window.bones.rightHand.scale.set(inv, inv, inv);
+    };
+    const scaleHands = (value) => {
+      const s = value / 50;
+      if (!window.bones) return;
+      if (window.bones.leftHand) window.bones.leftHand.scale.set(s, s, s);
+      if (window.bones.rightHand) window.bones.rightHand.scale.set(s, s, s);
+    };
+
+    createSlider('slider-head', v => scaleBone('head', v));
+    createSlider('slider-torso', v => scaleTorsoOnly(v));
+    createSlider('slider-arms', v => scaleArmsOnly(v));
+    createSlider('slider-hands', v => scaleHands(v));
+    createSlider('slider-legsval', v => scaleLegsOnly(v));
+    createSlider('slider-feet', v => scaleFeet(v));
+
+
+    function animateMain() {
+      requestAnimationFrame(animateMain);
+      renderer.render(scene, camera);
+    }
+    animateMain();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    document.getElementById('randomize-button').addEventListener('click', () => {
+      const randHair = Math.floor(Math.random() * Object.keys(window.hairModels).length);
+      const randEyes = Math.floor(Math.random() * Object.keys(window.eyeModels).length);
+      const randNose = Math.floor(Math.random() * Object.keys(window.noseModels).length);
+      const randMouth = Math.floor(Math.random() * Object.keys(window.mouthModels).length);
+
+      updateHairVisibility(randHair);
+      updateEyeVisibility(randEyes);
+      updateNoseVisibility(randNose);
+      updateMouthVisibility(randMouth);
+
+      document.querySelector('[data-target="hair"] .preset-value').textContent = randHair;
+      document.querySelector('[data-target="eyes"] .preset-value').textContent = randEyes;
+      document.querySelector('[data-target="nose"] .preset-value').textContent = randNose;
+      document.querySelector('[data-target="mouth"] .preset-value').textContent = randMouth;
+
+      hairPicker.color.hexString = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+      skinPicker.color.hexString = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+
+      document.querySelectorAll('.noUi-target').forEach(slider => {
+        const randVal = Math.floor(Math.random() * 81) + 20;
+        slider.noUiSlider.set(randVal);
+      });
+    });
+
+    let sceneStage = 0; 
+
+    const introScreen = document.getElementById('intro-screen');
+    const menuWrapper = document.getElementById('menu-wrapper');
+    const stageScreen = document.getElementById('stage');
+
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
+    let stageInitialised = false;
+   function updateScene() {
+      introScreen.style.display = (sceneStage === 0) ? 'flex' : 'none';
+      menuWrapper.style.display = (sceneStage === 1) ? 'block' : 'none';
+
+      document.getElementById('nav-buttons').style.display = (sceneStage > 0) ? 'block' : 'none';
+      document.getElementById('select-stage-button').style.display = (sceneStage === 2) ? 'block' : 'none';
+
+      if (sceneStage === 2) {
+      if (!stageInitialised) {
+        initStageShader(scene);
+        stageInitialised = true;
+      }
+
+      camera.position.set(0, 3, 5);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    }
+    }
+
+    prevButton.addEventListener('click', () => {
+      sceneStage = Math.max(0, sceneStage - 1);
+      updateScene();
+    });
+
+    nextButton.addEventListener('click', () => {
+      sceneStage = Math.min(2, sceneStage + 1);
+      updateScene();
+    });
+
+    startButton.addEventListener('click', () => {
+      const name = characterNameInput.value.trim();
+      if (!name) {
+        alert('Please enter a name.');
+        return;
+      }
+      document.querySelectorAll('.name-field').forEach(f => f.value = name);
+      sceneStage = 1;
+      updateScene();
+
+      gsap.to(camera.position, {
+        duration: 2,
+        x: 2, y: 1.5, z: 5,
+        ease: 'power2.inOut',
+        onUpdate: () => controls.update()
+      });
+    });
+
+    document.getElementById('select-stage-button').addEventListener('click', () => {
+      cycleShader();
+    });
+
+
+
+  </script>
+</body>
+</html>
