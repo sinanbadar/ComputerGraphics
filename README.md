@@ -1,2 +1,2 @@
 # ComputerGraphics
-Final Project
+Three.js Character Customisation Project
